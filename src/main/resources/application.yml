@@ -1,0 +1,78 @@
+server:
+  port: 8080
+  servlet:
+    encoding:
+      charset: UTF-8
+      force: true
+
+spring:
+  application:
+    name: campus-book-platform
+
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 6MB
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    # 库名 campus_book 与 sql/schema.sql 保持一致
+    url: "jdbc:mysql://localhost:3306/campus_book?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true"
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:root}
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: Asia/Shanghai
+    default-property-inclusion: non_null
+
+mybatis-plus:
+  # 书籍、订单模块继续使用 XML 手写 SQL；用户模块走 BaseMapper
+  mapper-locations: classpath*:/mapper/**/*.xml
+  type-aliases-package: com.campusbook.entity
+  configuration:
+    map-underscore-to-camel-case: true
+    default-fetch-size: 100
+    default-statement-timeout: 30
+  global-config:
+    banner: false
+    db-config:
+      id-type: auto
+
+app:
+  upload:
+    # 图片保存目录，相对于启动目录；会被映射成 /uploads/**
+    dir: uploads
+  order:
+    # 待支付订单超过这么多分钟未支付，系统自动取消并回滚库存
+    timeout-minutes: 30
+  jwt:
+    # 生产环境务必通过环境变量 JWT_SECRET 覆盖，长度至少 32 字节（HS256 要求）
+    secret: ${JWT_SECRET:campus-book-platform-dev-only-secret-key-change-me-0123456789}
+    expire-minutes: 120
+    header: Authorization
+    # 注意末尾空格，Authorization: Bearer <token>
+    prefix: "Bearer "
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      # 本地开发时把 db、diskSpace 等明细也返回，方便排查
+      show-details: always
+
+logging:
+  level:
+    root: info
+    com.campusbook: debug
+    com.campusbook.mapper: debug
+  pattern:
+    # traceId 由 TraceIdFilter 写入 MDC，方便把一次请求的日志串起来
+    console: "%d{HH:mm:ss.SSS} %-5level [%X{traceId:-}] %logger{36} - %msg%n"

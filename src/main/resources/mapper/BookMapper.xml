@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.campusbook.mapper.BookMapper">
+
+    <!-- 浏览量自增：不需要先查出来再 +1 -->
+    <update id="increaseViewCount">
+        UPDATE book
+        SET view_count = view_count + 1
+        WHERE id = #{id}
+          AND deleted = 0
+    </update>
+
+    <!--
+        核心防超卖 SQL：
+        1. 只有 status = 1 且 stock >= 1 才会被更新，影响行数 0 就说明被抢走了；
+        2. SET 从左到右求值，所以先判断 status 再扣 stock；
+        3. 最后一本扣完把 status 置为 3（已售出），之后任何下单都匹配不到。
+    -->
+    <update id="decreaseStock">
+        <![CDATA[
+        UPDATE book
+        SET status  = IF(stock <= 1, 3, status),
+            stock   = stock - 1,
+            version = version + 1
+        WHERE id = #{id}
+          AND status = 1
+          AND deleted = 0
+          AND stock >= 1
+        ]]>
+    </update>
+
+    <!-- 取消订单回滚库存：先由订单状态条件更新占位，成功后才执行这里 -->
+    <update id="restoreStock">
+        UPDATE book
+        SET stock   = stock + 1,
+            status  = 1,
+            version = version + 1
+        WHERE id = #{id}
+          AND deleted = 0
+    </update>
+
+</mapper>

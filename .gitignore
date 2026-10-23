@@ -1,0 +1,43 @@
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### IntelliJ IDEA ###
+.idea/
+*.iws
+*.iml
+*.ipr
+
+### Eclipse ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### VS Code ###
+.vscode/
+
+### Mac ###
+.DS_Store
+
+### 日志与本地配置 ###
+logs/
+*.log
+application-local.yml
+.env
+
+### 运行期数据（上传的图片、本地依赖缓存） ###
+uploads/
+frontend/dist/
+
+### 本地构建工具缓存（由校验脚本临时使用） ###
+.tools/
+.m2/
+.npm-cache/
+
+### 本机 PATH 备份（不属于项目代码） ###
+.path-backup/
